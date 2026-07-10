@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "Influencer": {
+      "title": "Influencer",
+      "description": "An influencer in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "handle": { "type": "string" },
+        "platform": { "type": "string" },
+        "followers": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "Brand": {
+      "title": "Brand",
+      "description": "A brand in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "industry": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/influencers/{influencerId}": {
+      "schema": { "$ref": "#/entities/Influencer" },
+      "description": "Influencer documents"
+    },
+    "/brands/{brandId}": {
+      "schema": { "$ref": "#/entities/Brand" },
+      "description": "Brand documents"
+    }
+  }
+}
