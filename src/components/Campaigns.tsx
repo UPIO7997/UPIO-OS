@@ -10,6 +10,7 @@ import { Label } from "./ui/label"
 
 export default function Campaigns() {
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
   const [campaigns, setCampaigns] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -88,10 +89,15 @@ export default function Campaigns() {
   }
 
   const filteredCampaigns = campaigns.filter(c => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (c.name || '').toLowerCase().includes(s) || 
-           (c.brand || '').toLowerCase().includes(s);
+    let match = true
+    if (search) {
+      const s = search.toLowerCase();
+      match = (c.name || '').toLowerCase().includes(s) || (c.brand || '').toLowerCase().includes(s);
+    }
+    if (statusFilter !== 'All') {
+      match = match && c.status === statusFilter;
+    }
+    return match;
   })
 
   return (
@@ -113,14 +119,26 @@ export default function Campaigns() {
 
       <Card>
         <div className="p-4 border-b border-zinc-200 dark:border-[#27272A] flex items-center justify-between gap-4">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-            <Input 
-              placeholder="Search campaigns..." 
-              className="pl-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex items-center gap-4 w-full">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+              <Input 
+                placeholder="Search campaigns..." 
+                className="pl-9"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className="h-9 rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:border-[#27272A] dark:bg-[#18181B] dark:text-[#FAFAFA]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Planning">Planning</option>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+            </select>
           </div>
         </div>
         <CardContent className="p-0">

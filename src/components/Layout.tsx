@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { hasAccess } from '../lib/permissions'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -44,6 +45,16 @@ const navigation = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  let role = ''
+  try {
+    role = localStorage.getItem('upio_auth') || ''
+  } catch (e) {}
+  const allowedNavigation = navigation.filter(item => hasAccess(role, item.href))
+
+  const userInitials = role === 'founder' ? 'JD' : (role === 'finance' ? 'FN' : (role === 'research' ? 'RS' : 'EM'))
+  const userName = role === 'founder' ? 'James Upio' : (role === 'finance' ? 'Finance Team' : (role === 'research' ? 'Research Team' : 'Employee'))
+  const userRoleStr = role === 'founder' ? 'Founder (Admin)' : role.charAt(0).toUpperCase() + role.slice(1)
 
   return (
     <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
@@ -59,7 +70,7 @@ export default function Layout() {
           </div>
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="px-3 space-y-1">
-              {navigation.map((item) => (
+              {allowedNavigation.map((item) => (
                 <NavLink
                   key={item.name}
                   to={item.href}
@@ -93,7 +104,7 @@ export default function Layout() {
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-3 space-y-1">
-            {navigation.map((item) => (
+            {allowedNavigation.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.href}
@@ -115,11 +126,11 @@ export default function Layout() {
         <div className="p-4 border-t border-zinc-200 dark:border-[#27272A]">
           <div className="flex items-center gap-3 bg-zinc-50 dark:bg-[#18181B] p-3 rounded-xl border border-zinc-200 dark:border-[#27272A]">
             <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-[#27272A] border border-zinc-300 dark:border-[#3F3F46] flex items-center justify-center font-bold text-xs uppercase text-zinc-900 dark:text-white">
-              JD
+              {userInitials}
             </div>
             <div className="overflow-hidden flex flex-col">
-              <span className="text-xs font-semibold truncate dark:text-white">James Upio</span>
-              <span className="text-[10px] text-zinc-500 dark:text-[#71717A]">Founder (Admin)</span>
+              <span className="text-xs font-semibold truncate dark:text-white">{userName}</span>
+              <span className="text-[10px] text-zinc-500 dark:text-[#71717A]">{userRoleStr}</span>
             </div>
           </div>
         </div>
@@ -141,7 +152,6 @@ export default function Layout() {
               <span className="ml-auto text-[10px] bg-zinc-200 dark:bg-[#27272A] px-1.5 py-0.5 rounded text-zinc-600 dark:text-[#A1A1AA] font-mono tracking-tighter">⌘K</span>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2 bg-primary/10 dark:bg-[#F27D26]/10 text-primary dark:text-[#F27D26] px-3 py-1 rounded-full border border-primary/20 dark:border-[#F27D26]/20">
               <span className="w-2 h-2 rounded-full bg-primary dark:bg-[#F27D26] animate-pulse"></span>
@@ -151,9 +161,14 @@ export default function Layout() {
               <Bell className="h-5 w-5" />
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 border border-white dark:border-zinc-900" />
             </button>
+            <button onClick={() => {
+              try { localStorage.removeItem('upio_auth') } catch (e) {}
+              window.location.reload()
+            }} className="text-xs text-zinc-500 hover:text-red-500 underline ml-2">
+              Logout
+            </button>
           </div>
         </header>
-
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>

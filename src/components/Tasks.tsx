@@ -17,7 +17,7 @@ export default function Tasks() {
   
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    title: '', description: '', assigneeId: '', status: 'To Do', dueDate: ''
+    title: '', description: '', assigneeIds: [] as string[], status: 'To Do', dueDate: ''
   })
 
   const fetchData = async () => {
@@ -43,9 +43,14 @@ export default function Tasks() {
   const handleSave = async () => {
     try {
       if (editingId) {
-        await updateDoc(doc(db, "tasks", editingId), formData)
+        await updateDoc(doc(db, "tasks", editingId), { ...formData, assigneeId: formData.assigneeIds[0] || 'Unassigned' })
       } else {
-        await addDoc(collection(db, "tasks"), formData)
+        if (formData.assigneeIds.length > 0) {
+          const promises = formData.assigneeIds.map(id => addDoc(collection(db, "tasks"), { ...formData, assigneeId: id }))
+          await Promise.all(promises)
+        } else {
+          await addDoc(collection(db, "tasks"), { ...formData, assigneeId: 'Unassigned' })
+        }
       }
       setIsDialogOpen(false)
       fetchData()
@@ -71,14 +76,14 @@ export default function Tasks() {
       setFormData({
         title: task.title || '',
         description: task.description || '',
-        assigneeId: task.assigneeId || '',
+        assigneeIds: [task.assigneeId].filter(Boolean),
         status: task.status || 'To Do',
         dueDate: task.dueDate || ''
       })
     } else {
       setEditingId(null)
       setFormData({
-        title: '', description: '', assigneeId: '', status: 'To Do', dueDate: ''
+        title: '', description: '', assigneeIds: [], status: 'To Do', dueDate: ''
       })
     }
     setIsDialogOpen(true)
@@ -205,14 +210,17 @@ export default function Tasks() {
                 onChange={e => setFormData({...formData, description: e.target.value})} 
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right dark:text-[#FAFAFA]">Assignee</Label>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right dark:text-[#FAFAFA] mt-2">Assignees</Label>
               <select 
-                className="col-span-3 flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:border-[#27272A] dark:bg-[#18181B] dark:text-[#FAFAFA]"
-                value={formData.assigneeId} 
-                onChange={e => setFormData({...formData, assigneeId: e.target.value})}
+                multiple
+                className="col-span-3 flex min-h-[100px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:border-[#27272A] dark:bg-[#18181B] dark:text-[#FAFAFA]"
+                value={formData.assigneeIds} 
+                onChange={e => {
+                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                  setFormData({...formData, assigneeIds: selectedOptions})
+                }}
               >
-                <option value="Unassigned">Unassigned</option>
                 {employees.map(e => (
                   <option key={e.id} value={e.id}>{e.name} ({e.role})</option>
                 ))}

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './components/Dashboard'
 import Influencers from './components/Influencers'
@@ -19,26 +20,64 @@ import Reports from './components/Reports'
 import Settings from './components/Settings'
 import Documents from './components/Documents'
 import AiChat from './components/AiChat'
+import Login from './components/Login'
+import NotAvailable from './components/NotAvailable'
+import { hasAccess } from './lib/permissions'
+
+function ProtectedRoute({ children, path, role }: { children: React.ReactNode, path: string, role: string }) {
+  if (!hasAccess(role, path)) {
+    return <NotAvailable />
+  }
+  return <>{children}</>
+}
 
 export default function App() {
+  const [role, setRole] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    try {
+      const authStatus = localStorage.getItem('upio_auth')
+      if (authStatus) {
+        setRole(authStatus)
+      }
+    } catch (e) {
+      console.warn('localStorage is not accessible:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  if (loading) {
+    return null
+  }
+
+  if (!role) {
+    return <Login onLogin={(r) => setRole(r)} />
+  }
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="influencers" element={<Influencers />} />
-          <Route path="theme-influencers" element={<ThemeInfluencers />} />
-          <Route path="brands" element={<Brands />} />
-          <Route path="campaigns" element={<Campaigns />} />
-          <Route path="finance" element={<Finance />} />
-          <Route path="employees" element={<Employees />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="calendar" element={<CalendarView />} />
-          <Route path="knowledge" element={<Knowledge />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="ai" element={<AiChat />} />
+          <Route index element={
+            hasAccess(role, "/") 
+              ? <ProtectedRoute path="/" role={role}><Dashboard /></ProtectedRoute>
+              : <Navigate to={role === 'employee' ? '/influencers' : (role === 'research' ? '/employees' : '/')} replace />
+          } />
+          <Route path="influencers" element={<ProtectedRoute path="/influencers" role={role}><Influencers /></ProtectedRoute>} />
+          <Route path="theme-influencers" element={<ProtectedRoute path="/theme-influencers" role={role}><ThemeInfluencers /></ProtectedRoute>} />
+          <Route path="brands" element={<ProtectedRoute path="/brands" role={role}><Brands /></ProtectedRoute>} />
+          <Route path="campaigns" element={<ProtectedRoute path="/campaigns" role={role}><Campaigns /></ProtectedRoute>} />
+          <Route path="finance" element={<ProtectedRoute path="/finance" role={role}><Finance /></ProtectedRoute>} />
+          <Route path="employees" element={<ProtectedRoute path="/employees" role={role}><Employees /></ProtectedRoute>} />
+          <Route path="tasks" element={<ProtectedRoute path="/tasks" role={role}><Tasks /></ProtectedRoute>} />
+          <Route path="calendar" element={<ProtectedRoute path="/calendar" role={role}><CalendarView /></ProtectedRoute>} />
+          <Route path="knowledge" element={<ProtectedRoute path="/knowledge" role={role}><Knowledge /></ProtectedRoute>} />
+          <Route path="reports" element={<ProtectedRoute path="/reports" role={role}><Reports /></ProtectedRoute>} />
+          <Route path="settings" element={<ProtectedRoute path="/settings" role={role}><Settings /></ProtectedRoute>} />
+          <Route path="documents" element={<ProtectedRoute path="/documents" role={role}><Documents /></ProtectedRoute>} />
+          <Route path="ai" element={<ProtectedRoute path="/ai" role={role}><AiChat /></ProtectedRoute>} />
           <Route path="*" element={
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
               <h2 className="text-xl font-semibold mb-2">Module Under Construction</h2>
@@ -50,3 +89,4 @@ export default function App() {
     </BrowserRouter>
   )
 }
+
