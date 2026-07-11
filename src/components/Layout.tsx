@@ -52,9 +52,9 @@ export default function Layout() {
   } catch (e) {}
   const allowedNavigation = navigation.filter(item => hasAccess(role, item.href))
 
-  const userInitials = role === 'founder' ? 'JD' : (role === 'finance' ? 'FN' : (role === 'research' ? 'RS' : 'EM'))
-  const userName = role === 'founder' ? 'James Upio' : (role === 'finance' ? 'Finance Team' : (role === 'research' ? 'Research Team' : 'Employee'))
-  const userRoleStr = role === 'founder' ? 'Founder (Admin)' : role.charAt(0).toUpperCase() + role.slice(1)
+  const userInitials = role === 'founder' ? 'JD' : (role === 'cofounder' ? 'P5' : (role === 'finance' ? 'FN' : (role === 'research' ? 'RS' : 'EM')))
+  const userName = role === 'founder' ? 'James Upio' : (role === 'cofounder' ? 'Prithvi' : (role === 'finance' ? 'Finance Team' : (role === 'research' ? 'Research Team' : 'Employee')))
+  const userRoleStr = role === 'founder' ? 'Founder (Admin)' : (role === 'cofounder' ? 'Co-Founder (Admin)' : role.charAt(0).toUpperCase() + role.slice(1))
 
   return (
     <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">

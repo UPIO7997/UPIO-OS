@@ -3,10 +3,11 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   finance: ['/finance', '/', '/reports', '/ai', '/tasks'],
   research: ['/employees', '/tasks', '/ai'],
   founder: ['*'], // '*' means all access
+  cofounder: ['*'], // cofounder also has all access
 }
 
 export function hasAccess(role: string, path: string): boolean {
-  if (role === 'founder') return true;
+  if (role === 'founder' || role === 'cofounder') return true;
   
   const allowedPaths = ROLE_PERMISSIONS[role] || [];
   if (allowedPaths.includes('*')) return true;

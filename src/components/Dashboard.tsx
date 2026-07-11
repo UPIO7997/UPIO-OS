@@ -40,13 +40,20 @@ export default function Dashboard() {
   const totalExpense = finances.filter(f => f.type === 'Expense').reduce((sum, curr) => sum + Number(curr.amount || 0), 0)
   const netProfit = totalIncome * 0.20 // 20% profit calculation as requested
 
+  let currentRole = 'founder'
+  try {
+    currentRole = localStorage.getItem('upio_auth') || 'founder'
+  } catch (e) {}
+
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div className="space-y-1">
           <div>
             <span className="text-xs text-zinc-500 dark:text-[#71717A] font-medium uppercase tracking-wider">Operational Overview</span>
-            <h2 className="text-3xl font-bold tracking-tight">Founder Dashboard</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              {currentRole === 'cofounder' ? "Co Founder's Dashboard" : "Founder Dashboard"}
+            </h2>
           </div>
         </div>
         <div className="flex gap-2">

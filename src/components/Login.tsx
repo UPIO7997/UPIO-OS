@@ -23,6 +23,11 @@ export default function Login({ onLogin }: LoginProps) {
       onLogin('founder')
       return
     }
+    if (upperCode === 'PRITHVI5') {
+      try { localStorage.setItem('upio_auth', 'cofounder') } catch(e) {}
+      onLogin('cofounder')
+      return
+    }
 
     if (/^UPIO\d+$/.test(upperCode)) {
       try { localStorage.setItem('upio_auth', 'employee') } catch(e) {}
